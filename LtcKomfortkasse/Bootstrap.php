@@ -1,11 +1,11 @@
 <?php
 
-class Shopware_Plugins_Backend_Komfortkasse_Bootstrap extends Shopware_Components_Plugin_Bootstrap 
+class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Components_Plugin_Bootstrap 
 {
 	
 	public function getVersion() 
 	{
-		return '1.1.0';
+		return '1.1.1';
 	}
 	
 	public function getLabel() 
@@ -132,6 +132,4 @@ class Shopware_Plugins_Backend_Komfortkasse_Bootstrap extends Shopware_Component
 			$result = @file_get_contents ( 'http://api.komfortkasse.eu/api/shop/invoice.jsf', false, $context );
 		}
 	}
-}
-	
 }
