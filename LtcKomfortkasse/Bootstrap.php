@@ -5,7 +5,7 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 	
 	public function getVersion() 
 	{
-		return '1.1.1';
+		return '1.1.2';
 	}
 	
 	public function getLabel() 
