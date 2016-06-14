@@ -71,6 +71,10 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 	
 	public function onPostDispatchCheckout(Enlight_Event_EventArgs $arguments) 
 	{
+		$config = $this->Config();
+		if (empty($config->active)) {
+			return;
+		}
 		$subject = $arguments->getSubject ();
 		$request = $subject->Request ();
 		$response = $subject->Response ();
@@ -106,6 +110,10 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 	
 	public function afterCreatingDocument(Enlight_Hook_HookArgs $arguments) 
 	{
+		$config = $this->Config();
+		if (empty($config->active)) {
+			return;
+		}
 		$document = $arguments->getSubject ();
 		
 		$rid = Shopware ()->Db ()->fetchOne ( "SELECT docID FROM s_order_documents WHERE orderID = ?", $document->_order->shipping ['orderID'] . " AND type = ?", 1 );
