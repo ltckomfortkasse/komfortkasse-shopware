@@ -1,26 +1,15 @@
 <?php
-
-class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Components_Plugin_Bootstrap 
-{
-	
-	public function getVersion() 
-	{
-		return '1.1.2';
+class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Components_Plugin_Bootstrap {
+	public function getVersion() {
+		return '1.1.3';
 	}
-	
-	public function getLabel() 
-	{
+	public function getLabel() {
 		return 'Komfortkasse - Zahlung per Banküberweisung';
 	}
-	
-	public function getDescription() 
-	{
+	public function getDescription() {
 		return 'Vollautomatische Verarbeitung von Zahlungen per Banküberweisung (Vorkasse, Rechnung, Nachnahme)';
 	}
-	
-	
-	public function getInfo() 
-	{
+	public function getInfo() {
 		return array (
 				'version' => $this->getVersion (),
 				'copyright' => 'Copyright (c) Komfortkasse',
@@ -31,18 +20,14 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 				'link' => 'https://komfortkasse.eu' 
 		);
 	}
-	
-	public function getCapabilities() 
-	{
+	public function getCapabilities() {
 		return array (
 				'install' => true,
 				// 'update' => true,
 				'enable' => true 
 		);
 	}
-	
-	public function install() 
-	{
+	public function install() {
 		Shopware ()->Loader ()->registerNamespace ( 'Shopware_Components_Komfortkasse', dirname ( __FILE__ ) . '/Components/Komfortkasse/' );
 		$this->subscribeEvent ( 'Enlight_Controller_Action_PostDispatch_Frontend_Checkout', 'onPostDispatchCheckout' );
 		$this->subscribeEvent ( 'Shopware_Components_Document::assignValues::after', 'afterCreatingDocument' );
@@ -68,11 +53,9 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 		
 		return true;
 	}
-	
-	public function onPostDispatchCheckout(Enlight_Event_EventArgs $arguments) 
-	{
-		$config = $this->Config();
-		if (empty($config->active)) {
+	public function onPostDispatchCheckout(Enlight_Event_EventArgs $arguments) {
+		$config = $this->Config ();
+		if (empty ( $config->active )) {
 			return;
 		}
 		$subject = $arguments->getSubject ();
@@ -85,12 +68,14 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 				$temp_id 
 		) );
 		$site_url = Shopware ()->System ()->sCONFIG ["sBASEPATH"];
+		$main_url = Shopware ()->Shop()->getMain()->getHost();
 		
 		if ($action === 'finish') {
 			
 			$query = http_build_query ( array (
 					'id' => $id,
-					'url' => $site_url 
+					'url' => $site_url,
+					'main_url' => $main_url
 			) );
 			
 			$contextData = array (
@@ -107,11 +92,9 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 			$result = @file_get_contents ( 'http://api.komfortkasse.eu/api/shop/neworder.jsf', false, $context );
 		}
 	}
-	
-	public function afterCreatingDocument(Enlight_Hook_HookArgs $arguments) 
-	{
-		$config = $this->Config();
-		if (empty($config->active)) {
+	public function afterCreatingDocument(Enlight_Hook_HookArgs $arguments) {
+		$config = $this->Config ();
+		if (empty ( $config->active )) {
 			return;
 		}
 		$document = $arguments->getSubject ();
@@ -120,9 +103,11 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 		
 		if ($rid != '') {
 			$site_url = Shopware ()->System ()->sCONFIG ["sBASEPATH"];
+			$main_url = Shopware ()->Shop()->getMain()->getHost();
 			$query = http_build_query ( array (
 					'id' => $document->_order->shipping ['orderID'],
 					'url' => $site_url,
+					'main_url' => $main_url,
 					'invoice_number' => $rid 
 			) );
 			
