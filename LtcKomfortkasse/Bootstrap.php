@@ -47,22 +47,33 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
         Shopware()->Loader()->registerNamespace('Shopware_Components_Komfortkasse', dirname(__FILE__) . '/Components/Komfortkasse/');
         $this->subscribeEvent('Enlight_Controller_Action_PostDispatch_Frontend_Checkout', 'onPostDispatchCheckout');
         $this->subscribeEvent('Shopware_Components_Document::assignValues::after', 'afterCreatingDocument');
-        $this->subscribeEvent('Shopware\Models\Order\Order::postUpdate', 'updateOrder', 99999);
+        $this->subscribeEvent('Shopware\Models\Order\Order::postUpdate', 'updateOrder', 99);
 
         $form = $this->Form();
         $parent = $this->Forms()->findOneBy(array ('name' => 'Frontend'
         ));
         $form->setParent($parent);
-        $form->setElement('checkbox', 'active', array ('label' => 'Plugin aktivieren','value' => true,'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
-        ));
-        if (method_exists('Shopware\Models\Attribute\OrderDetail', 'setViisonCanceledQuantity'))
-            $form->setElement('checkbox', 'cancelDetail', array ('label' => 'Bestellpositionen stornieren (Pickware)','value' => false,'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
-            ));
-        $this->addFormTranslations(array ('en_GB' => array ('plugin_form' => array ('label' => 'activate plugin'
-        ),'cancelDetail' => array ('label' => 'Cancel order details (Pickware)'
-        )
-        )
-        ));
+        $form->setElement('checkbox', 'active',
+                array ('label' => 'Plugin aktivieren','value' => true,'scope' => 1 /*Shopware/Models/Config/Element::SCOPE_SHOP*/)
+        );
+        if (method_exists('Shopware\Models\Attribute\OrderDetail', 'setViisonCanceledQuantity')) {
+            $form->setElement('checkbox', 'cancelDetail',
+                    array ('label' => 'Bestellpositionen stornieren (Pickware)','value' => false,'scope' => 1 /*Shopware/Models/Config/Element::SCOPE_SHOP*/)
+            );
+            $this->addFormTranslations(
+                    array ('en_GB' =>
+                            array ('plugin_form' => array ('label' => 'activate plugin'),
+                                    'cancelDetail' => array ('label' => 'Cancel order details (Pickware)')
+                            )
+                    )
+            );
+        } else {
+            $this->addFormTranslations(
+                    array ('en_GB' =>
+                            array ('plugin_form' => array ('label' => 'activate plugin'))
+                    )
+            );
+        }
 
         return true;
 
