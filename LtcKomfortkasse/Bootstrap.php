@@ -5,7 +5,7 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 
     public function getVersion()
     {
-        return '1.2.0';
+        return '1.2.1';
 
     }
 
@@ -35,7 +35,7 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
     public function getCapabilities()
     {
         return array ('install' => true,
-                // 'update' => true,
+                'update' => true,
                 'enable' => true
         );
 
@@ -45,10 +45,20 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
     public function install()
     {
         Shopware()->Loader()->registerNamespace('Shopware_Components_Komfortkasse', dirname(__FILE__) . '/Components/Komfortkasse/');
+
+        $this->subscribeEvents();
+        $this->createForm();
+
+        return true;
+    }
+
+    protected function subscribeEvents() {
         $this->subscribeEvent('Enlight_Controller_Action_PostDispatch_Frontend_Checkout', 'onPostDispatchCheckout');
         $this->subscribeEvent('Shopware_Components_Document::assignValues::after', 'afterCreatingDocument');
         $this->subscribeEvent('Shopware\Models\Order\Order::postUpdate', 'updateOrder', 99);
+    }
 
+    protected function createForm() {
         $form = $this->Form();
         $parent = $this->Forms()->findOneBy(array ('name' => 'Frontend'
         ));
@@ -58,12 +68,12 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
         );
         if (method_exists('Shopware\Models\Attribute\OrderDetail', 'setViisonCanceledQuantity')) {
             $form->setElement('checkbox', 'cancelDetail',
-                    array ('label' => 'Bestellpositionen stornieren (Pickware)','value' => false,'scope' => 1 /*Shopware/Models/Config/Element::SCOPE_SHOP*/)
+                    array ('label' => 'Bestellpositionen stornieren (Pickware/Shopware ERP)','value' => false,'scope' => 1 /*Shopware/Models/Config/Element::SCOPE_SHOP*/)
             );
             $this->addFormTranslations(
                     array ('en_GB' =>
                             array ('plugin_form' => array ('label' => 'activate plugin'),
-                                    'cancelDetail' => array ('label' => 'Cancel order details (Pickware)')
+                                    'cancelDetail' => array ('label' => 'Cancel order details (Pickware/Shopware ERP)')
                             )
                     )
             );
@@ -74,9 +84,12 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
                     )
             );
         }
+    }
 
-        return true;
-
+    public function update($existingVersion)
+    {
+        $this->subscribeEvents();
+        $this->createForm();
     }
 
 
@@ -103,7 +116,9 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
                     $detail->setQuantity(0);
                     $detail->setShipped(0);
                     $attr->setViisonCanceledQuantity($attr->getViisonCanceledQuantity() + $qty);
-                    $attr->setViisonPickedQuantity(0);
+                    // ab Shopware 5.2 existiert die Methode setViisonPickedQuantity nicht mehr
+                    if (method_exists('Shopware\Models\Attribute\OrderDetail', 'setViisonPickedQuantity'))
+                        $attr->setViisonPickedQuantity(0);
                     $em->persist($detail);
                 }
             }
