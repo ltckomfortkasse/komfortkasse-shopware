@@ -35,7 +35,7 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
     public function getCapabilities()
     {
         return array ('install' => true,
-                'update' => false,
+                'update' => true,
                 'enable' => true
         );
 
@@ -86,11 +86,11 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
         }
     }
 
-//     public function update($existingVersion)
-//     {
-//         // $this->subscribeEvents();
-//         // $this->createForm();
-//     }
+    public function update($existingVersion)
+    {
+        $this->subscribeEvents();
+        $this->createForm();
+    }
 
 
     public function updateOrder(Enlight_Event_EventArgs $arguments)
