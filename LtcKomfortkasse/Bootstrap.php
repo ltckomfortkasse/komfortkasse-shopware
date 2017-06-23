@@ -5,7 +5,7 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 
     public function getVersion()
     {
-        return '1.2.1';
+        return '1.2.3';
 
     }
 
@@ -35,7 +35,7 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
     public function getCapabilities()
     {
         return array ('install' => true,
-                // 'update' => true,
+                'update' => false,
                 'enable' => true
         );
 
@@ -85,6 +85,13 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
             );
         }
     }
+
+//     public function update($existingVersion)
+//     {
+//         // $this->subscribeEvents();
+//         // $this->createForm();
+//     }
+
 
     public function updateOrder(Enlight_Event_EventArgs $arguments)
     {
@@ -162,7 +169,7 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
         }
         $document = $arguments->getSubject();
 
-        $rid = Shopware()->Db()->fetchOne("SELECT docID FROM s_order_documents WHERE orderID = ?", $document->_order->shipping ['orderID'] . " AND type = ?", 1);
+        $rid = Shopware()->Db()->fetchOne("SELECT docID FROM s_order_documents WHERE orderID = " . $document->_order->shipping ['orderID'] . " AND type = 1");
 
         if ($rid != '') {
             $site_url = Shopware()->System()->sCONFIG ["sBASEPATH"];
