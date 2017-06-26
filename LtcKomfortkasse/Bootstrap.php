@@ -90,6 +90,8 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
     {
         $this->subscribeEvents();
         $this->createForm();
+
+        return true;
     }
 
 
