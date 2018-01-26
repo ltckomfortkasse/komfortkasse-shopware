@@ -5,7 +5,7 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 
     public function getVersion()
     {
-        return '1.2.3';
+        return '1.2.4';
 
     }
 
@@ -98,17 +98,36 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
     public function updateOrder(Enlight_Event_EventArgs $arguments)
     {
         $config = $this->Config();
+        if (empty($config->active)) {
+            return;
+        }
+
+        $order = $arguments->get('entity');
+            if ($historyList->count() == 0 || ($historyList->count() == 1 && $historyList->last()->getPreviousPaymentStatus()->getId() == 0)) {
+                $site_url = Shopware()->System()->sCONFIG ["sBASEPATH"];
+                $query = http_build_query(array ('id' => $order->getId(),'url' => $site_url
+                ));
+                $contextData = array ('method' => 'POST','timeout' => 2,'header' => "Connection: close\r\n" . 'Content-Length: ' . strlen($query) . "\r\n",'content' => $query
+                );
+                $context = stream_context_create(array ('http' => $contextData
+                ));
+                $result = @file_get_contents('http://api.komfortkasse.eu/api/shop/neworder.jsf', false, $context);
+                return;
+            }
+        }
+
+        // if order has been cancelled: cancel details in pickware/shopware erp
+
         if (empty($config->cancelDetail)) {
             return;
         }
         if (!method_exists('Shopware\Models\Attribute\OrderDetail', 'setViisonCanceledQuantity'))
             return;
 
-        $order = $arguments->get('entity');
         if (strpos($order->getTransactionID(), 'Komfortkasse') === false)
             return;
 
-        $history = $order->getHistory()->last();
+        $history = $historyList->last();
         if ($history && $history->getPreviousOrderStatus()->getId() != 4 && $history->getOrderStatus()->getId() == 4) {
             $em = Shopware()->Container()->get('models');
             foreach ($order->getDetails()->toArray() as $detail) {
@@ -141,15 +160,16 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
         $response = $subject->Response();
         $action = $request->getActionName();
 
-        $temp_id = $_SESSION ['Shopware'] ['sessionId'];
-        $id = Shopware()->Db()->fetchOne("SELECT id FROM s_order WHERE temporaryID = ?", array ($temp_id
-        ));
-        $site_url = Shopware()->System()->sCONFIG ["sBASEPATH"];
-
         if ($action === 'finish') {
-
-            $query = http_build_query(array ('id' => $id,'url' => $site_url
-            ));
+            $site_url = Shopware()->System()->sCONFIG ["sBASEPATH"];
+            $ordernum = $_SESSION ['Shopware'] ['sOrderVariables']->sOrderNumber;
+            if ($ordernum) {
+                $query = http_build_query(array ('number' => $ordernum,'url' => $site_url));
+            } else {
+                $temp_id = $_SESSION ['Shopware'] ['sessionId'];
+                $id = Shopware()->Db()->fetchOne("SELECT id FROM s_order WHERE temporaryID = ?", array ($temp_id));
+                $query = http_build_query(array ('id' => $id,'url' => $site_url));
+            }
 
             $contextData = array ('method' => 'POST','timeout' => 2,'header' => "Connection: close\r\n" . 'Content-Length: ' . strlen($query) . "\r\n",'content' => $query
             );
