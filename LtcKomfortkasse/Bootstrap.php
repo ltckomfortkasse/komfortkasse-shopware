@@ -5,7 +5,7 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
 
     public function getVersion()
     {
-        return '1.2.4';
+        return '1.2.5';
 
     }
 
@@ -103,6 +103,11 @@ class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Compon
         }
 
         $order = $arguments->get('entity');
+        $historyList = $order->getHistory();
+
+        // if order is new: notify Komfortkasse about order
+
+        if ($order->getNumber()) {
             if ($historyList->count() == 0 || ($historyList->count() == 1 && $historyList->last()->getPreviousPaymentStatus()->getId() == 0)) {
                 $site_url = Shopware()->System()->sCONFIG ["sBASEPATH"];
                 $query = http_build_query(array ('id' => $order->getId(),'url' => $site_url
