@@ -1,7 +1,7 @@
 <?php
 class Shopware_Plugins_Backend_LtcKomfortkasse_Bootstrap extends Shopware_Components_Plugin_Bootstrap
 {
-
+    // TODO check for allow_url_fopen
 
     public function getVersion()
     {
